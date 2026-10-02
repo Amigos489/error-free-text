@@ -25,18 +25,16 @@ public class Task {
     @Column(name = "language",
             nullable = false)
     @Enumerated(EnumType.STRING)
-    private LanguageType languageType;
+    private LanguageType language;
 
     @Column(name = "status",
             nullable = false)
     @Enumerated(EnumType.STRING)
-    private TaskStatus taskStatus;
+    private TaskStatus status;
 
-    public Task(String text,
-                LanguageType languageType,
-                TaskStatus taskStatus) {
+    public Task(String text, LanguageType language, TaskStatus status) {
         this.text = text;
-        this.languageType = languageType;
-        this.taskStatus = taskStatus;
+        this.language = language;
+        this.status = status;
     }
 }

@@ -5,12 +5,10 @@ import balabol.error.free.text.services.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 public class TaskController {
 
     private final TaskService taskService;
@@ -19,8 +17,13 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    public ResponseEntity<?> createTask(@Valid
-                                        @RequestBody TaskCreation taskCreation) {
-        return new ResponseEntity<>(taskService.createTask(), HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<?> createTask(@Valid @RequestBody TaskCreation taskCreation) {
+        return new ResponseEntity<>(taskService.createTask(taskCreation), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> findTaskById(@PathVariable("id") int id) {
+        return new ResponseEntity<>(taskService.findTaskById(id), HttpStatus.OK);
     }
 }

@@ -51,7 +51,7 @@ public class TaskControllerTest {
                 .content(jsonMapper.writeValueAsBytes(taskCreationTest))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$").value(1));
+                .andExpect(jsonPath("$").value(testId));
         verify(taskService, times(1))
                 .createTask(taskCreationTest);
     }
@@ -67,5 +67,7 @@ public class TaskControllerTest {
 
         mockMvc.perform(get("/api/tasks/{id}", testId))
                 .andExpect(status().isNotFound());
+        verify(taskService, times(1))
+                .findTaskById(testId);
     }
 }

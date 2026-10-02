@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class TextCorrectionServiceImpl implements TextCorrectionService {
@@ -71,11 +73,27 @@ public class TextCorrectionServiceImpl implements TextCorrectionService {
 
     @Override
     public boolean ifNumbersAreInTheText(String text) {
-        return false;
+
+        String regex = "[0-9]+";
+
+        Pattern pattern = Pattern.compile(regex);
+
+        Matcher matcher = pattern.matcher(text);
+
+        return matcher.find();
     }
 
     @Override
     public boolean ifUrlsAreInTheText(String text) {
-        return false;
+
+        String regexCopy = "((http:\\/\\/|https:\\/\\/)?(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(\\/([a-zA-Z-_\\/\\.0-9#:?=&;,]*)?)?)";
+
+        String regex = "((http://|https://)?(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(/([a-zA-Z-_/.0-9#:?=&;,]*)?)?)";
+
+        Pattern pattern = Pattern.compile(regex);
+
+        Matcher matcher = pattern.matcher(text);
+
+        return matcher.find();
     }
 }

@@ -1,12 +1,16 @@
 package balabol.error.free.text.services.impl;
 
 import balabol.error.free.text.dtos.TaskCreation;
+import balabol.error.free.text.dtos.TaskResponse;
 import balabol.error.free.text.entities.Task;
 import balabol.error.free.text.enums.TaskStatus;
 import balabol.error.free.text.exceptions.NotFoundException;
+import balabol.error.free.text.mappers.TaskMapper;
 import balabol.error.free.text.repositories.TaskRepository;
 import balabol.error.free.text.services.TaskService;
 import balabol.error.free.text.services.TextCorrectionService;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -16,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
     private static Logger LOGGER = LoggerFactory.getLogger(TaskServiceImpl.class.getName());
@@ -26,11 +31,7 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
 
-    public TaskServiceImpl(TextCorrectionService textCorrectionService,
-                           TaskRepository taskRepository) {
-        this.textCorrectionService = textCorrectionService;
-        this.taskRepository = taskRepository;
-    }
+    private final TaskMapper taskMapper;
 
     @Override
     public int createTask(TaskCreation taskCreation) {
@@ -89,8 +90,6 @@ public class TaskServiceImpl implements TaskService {
             return;
         }
 
-        taskRepository.updateStatus(task, TaskStatus.IN_PROGRESS);
-
         String correctedText = textCorrectionService.correctText(task.getText());
 
         // Todo: Исправить на 1 метод,
@@ -99,5 +98,18 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.updateTextAndStatus(task, correctedText, TaskStatus.COMPLECTED);
 
         LOGGER.info("method correctTextInTask has finished work");
+    }
+
+    private TaskResponse mappingToTaskResponse(Task task) {
+
+        TaskResponse taskResponse = null;
+
+        switch (task.getStatus()) {
+            case NEW -> {taskResponse = new TaskResponse(null, task.getStatus(), null);}
+            case COMPLECTED -> {taskResponse = new TaskResponse(task.getText(), task.getStatus(), null);}
+            case COMPLETED_WITH_ERROR -> {taskResponse = new TaskResponse(null, task.getStatus(), task.getErrorMessage());}
+        }
+
+        return taskResponse;
     }
 }

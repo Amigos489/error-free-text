@@ -1,0 +1,18 @@
+package balabol.error.free.text.dtos;
+
+import balabol.error.free.text.enums.TaskStatus;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+public record TaskResponse(
+        @JsonInclude(
+                JsonInclude.Include.NON_NULL
+        )
+        String text,
+
+        TaskStatus status,
+
+        @JsonInclude(
+                JsonInclude.Include.NON_NULL
+        )
+        String messageError
+) {}

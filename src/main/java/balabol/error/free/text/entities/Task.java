@@ -32,6 +32,11 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
+    //Todo: подумать над размером сообщения
+    @Column(name = "error_message",
+            length = 60)
+    private String errorMessage;
+
     public Task(String text, LanguageType language, TaskStatus status) {
         this.text = text;
         this.language = language;

@@ -1,8 +1,12 @@
 package balabol.error.free.text.controllers;
 
 import balabol.error.free.text.dtos.TaskCreation;
+import balabol.error.free.text.dtos.TaskResponse;
+import balabol.error.free.text.entities.Task;
 import balabol.error.free.text.enums.LanguageType;
+import balabol.error.free.text.enums.TaskStatus;
 import balabol.error.free.text.exceptions.NotFoundException;
+import balabol.error.free.text.mappers.TaskMapper;
 import balabol.error.free.text.services.TaskService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,6 +32,9 @@ public class TaskControllerTest {
     @MockitoBean
     private TaskService taskService;
 
+    @MockitoBean
+    private TaskMapper taskMapper;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -39,7 +46,10 @@ public class TaskControllerTest {
     public void createTask_statusCreatedAndTaskId() throws Exception {
 
         TaskCreation taskCreationTest
-                = new TaskCreation("textTest", LanguageType.RU);
+                = new TaskCreation(
+                        "textTest",
+                LanguageType.RU
+        );
 
         int testId = 1;
 
@@ -57,8 +67,35 @@ public class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("Given task with id exists When method findTaskById Then status ok and taskResponse")
+    public void taskWithIdExists_findTaskById_statusOkAndTaskResponse() throws Exception {
+
+        int testId = 1;
+
+        TaskResponse taskResponse = new TaskResponse(
+                null,
+                TaskStatus.NEW,
+                null
+        );
+
+        Task task = new Task("text test", LanguageType.RU, TaskStatus.NEW);
+
+        Mockito.when(taskService.findTaskById(testId))
+                .thenReturn(task);
+
+        Mockito.when(taskMapper.mappingToTaskResponse(task)).thenReturn(taskResponse);
+
+        mockMvc.perform(get("/api/tasks/{id}", testId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status")
+                        .value(String.valueOf(TaskStatus.NEW)));
+        verify(taskService, times(1))
+                .findTaskById(testId);
+    }
+
+    @Test
     @DisplayName("Given task with id not exists When method findTaskById Then status not found")
-    public void findTaskById_statusNotFound() throws Exception {
+    public void taskWithIdNotExists_findTaskById_statusNotFound() throws Exception {
 
         int testId = 999;
 

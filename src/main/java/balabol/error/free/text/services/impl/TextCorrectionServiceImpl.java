@@ -3,31 +3,35 @@ package balabol.error.free.text.services.impl;
 import balabol.error.free.text.dtos.SpellResult;
 import balabol.error.free.text.services.TextCorrectionService;
 import balabol.error.free.text.services.YandexSpellerService;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@AllArgsConstructor
 public class TextCorrectionServiceImpl implements TextCorrectionService {
 
     private static final Logger LOGGER
             = LoggerFactory.getLogger(TextCorrectionServiceImpl.class.getName());
 
-    private int IS_DIGITS = 2;
+    private final String regexForCheckUrlsInText
+            = "((http://|https://)?(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(/([a-zA-Z-_/.0-9#:?=&;,]*)?)?)";
 
-    private int IS_URL = 4;
+    private final String regexForCheckNumbersInText
+            = "[0-9]+";
+
+    private final int IS_DIGITS = 2;
+
+    private final int IS_URL = 4;
 
     private final YandexSpellerService yandexSpellerService;
-
-    public TextCorrectionServiceImpl(YandexSpellerService yandexSpellerService) {
-        this.yandexSpellerService = yandexSpellerService;
-    }
 
     @Override
     public String correctText(String uncorrectedText) {
@@ -72,23 +76,7 @@ public class TextCorrectionServiceImpl implements TextCorrectionService {
     }
 
     @Override
-    public boolean ifNumbersAreInTheText(String text) {
-
-        String regex = "[0-9]+";
-
-        Pattern pattern = Pattern.compile(regex);
-
-        Matcher matcher = pattern.matcher(text);
-
-        return matcher.find();
-    }
-
-    @Override
-    public boolean ifUrlsAreInTheText(String text) {
-
-        String regexCopy = "((http:\\/\\/|https:\\/\\/)?(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(\\/([a-zA-Z-_\\/\\.0-9#:?=&;,]*)?)?)";
-
-        String regex = "((http://|https://)?(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(/([a-zA-Z-_/.0-9#:?=&;,]*)?)?)";
+    public boolean ifRegexAreInTheText(String text, String regex) {
 
         Pattern pattern = Pattern.compile(regex);
 

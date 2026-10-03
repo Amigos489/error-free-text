@@ -21,45 +21,27 @@ public class TextCorrectionServiceImplTest {
     private YandexSpellerServiceImpl yandexSpellerService;
 
     @Test
-    @DisplayName("Given text with numbers When ifNumbersAreInTheText Then true")
-    public void textWithNumbers_ifNumbersAreInTheText_true() {
+    @DisplayName("Given in text contains regex When ifRegexAreInTheText Then true")
+    public void InTextContainsRegex_ifRegexAreInTheText_true() {
 
-        String textTest = "text test 123";
+        String regex = "[0-9]+";
 
-        boolean actual = textCorrectionService.ifNumbersAreInTheText(textTest);
+        String textTest = "text test123";
 
-        Assertions.assertTrue(actual);
-    }
-
-    @Test
-    @DisplayName("Given text without numbers When ifNumbersAreInTheText Then false")
-    public void textWithoutNumbers_ifNumbersAreInTheText_false() {
-
-        String textTest = "text test";
-
-        boolean actual = textCorrectionService.ifNumbersAreInTheText(textTest);
-
-        Assertions.assertFalse(actual);
-    }
-
-    @Test
-    @DisplayName("Given text with urls When ifUrlsAreInTheText Then true")
-    public void textWithUrls_ifUrlsAreInTheText_true() {
-
-        String textTest = "text test https://text.test";
-
-        boolean actual = textCorrectionService.ifUrlsAreInTheText(textTest);
+        boolean actual = textCorrectionService.ifRegexAreInTheText(textTest, regex);
 
         Assertions.assertTrue(actual);
     }
 
     @Test
-    @DisplayName("Given text without urls When ifUrlsAreInTheText Then false")
-    public void textWithoutUrls_ifUrlsAreInTheText_false() {
+    @DisplayName("Given in text not contains regex When ifRegexAreInTheText Then false")
+    public void InTextNotContainsRegex_ifRegexAreInTheText_false() {
+
+        String regex = "[0-9]+";
 
         String textTest = "text test";
 
-        boolean actual = textCorrectionService.ifUrlsAreInTheText(textTest);
+        boolean actual = textCorrectionService.ifRegexAreInTheText(textTest, regex);
 
         Assertions.assertFalse(actual);
     }

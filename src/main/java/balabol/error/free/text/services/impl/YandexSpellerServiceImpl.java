@@ -2,6 +2,8 @@ package balabol.error.free.text.services.impl;
 
 import balabol.error.free.text.dtos.SpellResult;
 import balabol.error.free.text.services.YandexSpellerService;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class YandexSpellerServiceImpl implements YandexSpellerService {
 
     private static final Logger LOGGER
@@ -21,12 +24,6 @@ public class YandexSpellerServiceImpl implements YandexSpellerService {
     private final WebClient webClient;
 
     private final JsonMapper jsonMapper;
-
-    public YandexSpellerServiceImpl(WebClient webClient,
-                                    JsonMapper jsonMapper) {
-        this.webClient = webClient;
-        this.jsonMapper = jsonMapper;
-    }
 
     @Override
     public List<List<SpellResult>> sendTextResult(List<String> text, int options) {

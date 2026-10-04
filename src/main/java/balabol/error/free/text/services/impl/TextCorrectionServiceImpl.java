@@ -1,10 +1,10 @@
 package balabol.error.free.text.services.impl;
 
 import balabol.error.free.text.dtos.SpellResult;
+import balabol.error.free.text.dtos.TextRequest;
 import balabol.error.free.text.services.TextCorrectionService;
 import balabol.error.free.text.services.YandexSpellerService;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,53 +27,11 @@ public class TextCorrectionServiceImpl implements TextCorrectionService {
     private final String regexForCheckNumbersInText
             = "[0-9]+";
 
-    private final int IS_DIGITS = 2;
+    private final int IGNORE_DIGITS = 2;
 
-    private final int IS_URL = 4;
+    private final int IGNORE_URLS = 4;
 
     private final YandexSpellerService yandexSpellerService;
-
-    @Override
-    public String correctText(String uncorrectedText) {
-
-        LOGGER.info("method correctText has started working");
-
-        LOGGER.info("текст для исправления: {}", uncorrectedText);
-
-        List<String> textList = Collections.singletonList(uncorrectedText);
-
-        StringBuilder correctedTextBuilder = new StringBuilder(uncorrectedText);
-
-        LOGGER.info("текст для исправления: {}", uncorrectedText);
-
-        List<List<SpellResult>> resultCorrected = yandexSpellerService.sendTextResult(textList, 0);
-
-        for (List<SpellResult> listSpellResult : resultCorrected) {
-            for (SpellResult spellResult : listSpellResult) {
-                if (spellResult.s().isEmpty()) {
-                    LOGGER.warn("нечего заменять тут");
-                    continue;
-                }
-                LOGGER.info("spellResult.pos() = {}, spellResult.pos() + spellResult.len() = {}",
-                        spellResult.pos(), spellResult.pos() + spellResult.len());
-                LOGGER.info(correctedTextBuilder.substring(spellResult.pos(), spellResult.pos() + spellResult.len()));
-                LOGGER.info(spellResult.s().get(0));
-
-                correctedTextBuilder.replace(spellResult.pos(),
-                        (spellResult.pos() + spellResult.len()),
-                        spellResult.s().get(0));
-
-                LOGGER.info("промежуточный исправленный текст: {}",
-                        correctedTextBuilder.toString());
-            }
-        }
-
-        LOGGER.info("исправленный текст: {}", correctedTextBuilder.toString());
-
-        LOGGER.info("method correctText has finished work");
-
-        return correctedTextBuilder.toString();
-    }
 
     @Override
     public boolean ifRegexAreInTheText(String text, String regex) {
@@ -83,5 +41,49 @@ public class TextCorrectionServiceImpl implements TextCorrectionService {
         Matcher matcher = pattern.matcher(text);
 
         return matcher.find();
+    }
+
+    @Override
+    public String correctErrorsInText(String uncorrectedText) {
+
+        StringBuilder correctedTextBuilder
+                = new StringBuilder(uncorrectedText);
+
+        int options = 0;
+
+        if (ifRegexAreInTheText(uncorrectedText,
+                regexForCheckNumbersInText)) {
+            options += IGNORE_DIGITS;
+        }
+
+        if (ifRegexAreInTheText(uncorrectedText,
+                regexForCheckUrlsInText)) {
+            options += IGNORE_URLS;
+        }
+
+        TextRequest textRequest = new TextRequest(uncorrectedText, options);
+
+        List<List<SpellResult>> spellCheckResults = sendRequestOnCheckSpelling(textRequest);
+
+        // Todo: вынести в отдельный метод обработку полученного запроса (билдер, лист со спелл резалт)
+        for (List<SpellResult> listSpellResult : spellCheckResults) {
+            for (SpellResult spellResult : listSpellResult) {
+
+                if (spellResult.s().isEmpty()) {
+                    continue;
+                }
+
+                correctedTextBuilder.replace(spellResult.pos(),
+                        (spellResult.pos() + spellResult.len()),
+                        spellResult.s().get(0));
+            }
+        }
+
+        return correctedTextBuilder.toString();
+    }
+
+    @Override
+    public List<List<SpellResult>> sendRequestOnCheckSpelling(TextRequest textRequest) {
+        return yandexSpellerService.sendTextRequest(textRequest);
     }
 }

@@ -1,14 +1,24 @@
 package balabol.error.free.text.services.impl;
 
 import balabol.error.free.text.dtos.SpellResult;
+import balabol.error.free.text.dtos.TextRequest;
+import balabol.error.free.text.exceptions.TextCorrectionException;
 import balabol.error.free.text.services.YandexSpellerService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -26,27 +36,28 @@ public class YandexSpellerServiceImpl implements YandexSpellerService {
     private final JsonMapper jsonMapper;
 
     @Override
-    public List<List<SpellResult>> sendTextResult(List<String> text, int options) {
+    public List<List<SpellResult>> sendTextRequest(TextRequest textRequest) {
 
-        String textJson = jsonMapper.writeValueAsString(text).substring(2, text.get(0).length() - 2);
+        LOGGER.info("method sendTextRequest has started working with parameters: {}",
+                textRequest.toString());
 
-        LOGGER.info(textJson);
-
-        String optionsStr = String.valueOf(options);
-
-        LOGGER.info("textJson: {}, options: {}",
-                textJson, options);
+        MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
+        multiValueMap.add("text", textRequest.text());
+        multiValueMap.add("options", String.valueOf(textRequest.options()));
 
         String response = webClient.post()
-                .body(BodyInserters
-                        .fromFormData("text", textJson)
-                        .with("options", optionsStr))
+                .body(BodyInserters.fromFormData(multiValueMap))
                 .retrieve()
                 .bodyToMono(String.class)
-                .block();
+                .onErrorMap(error -> {
+                    LOGGER.error(error.getMessage());
+                    throw new TextCorrectionException(error.getMessage());
+                }).block();
 
-        List<List<SpellResult>> res = jsonMapper.readValue(response,
+        LOGGER.info("method sendTextRequest has finished work, response = {}",
+                response);
+
+        return jsonMapper.readValue(response,
                 new TypeReference<List<List<SpellResult>>>() {});
-        return res;
     }
 }

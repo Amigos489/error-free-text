@@ -5,6 +5,7 @@ import balabol.error.free.text.dtos.TaskResponse;
 import balabol.error.free.text.entities.Task;
 import balabol.error.free.text.enums.TaskStatus;
 import balabol.error.free.text.exceptions.NotFoundException;
+import balabol.error.free.text.exceptions.TextCorrectionException;
 import balabol.error.free.text.mappers.TaskMapper;
 import balabol.error.free.text.repositories.TaskRepository;
 import balabol.error.free.text.services.TaskService;
@@ -77,9 +78,6 @@ public class TaskServiceImpl implements TaskService {
 
         LOGGER.info("method correctTextInTask has started working");
 
-        // Todo: try / catch если ошибка при обработке текста,
-        //  то ставим соответствующий статус и прекращаем обработку
-
         Task task = taskRepository.findFirstByStatus(TaskStatus.NEW);
 
         // Todo: Создать проверку если null,
@@ -90,26 +88,17 @@ public class TaskServiceImpl implements TaskService {
             return;
         }
 
-        String correctedText = textCorrectionService.correctText(task.getText());
+        String correctedText = null;
 
-        // Todo: Исправить на 1 метод,
-        //  который меняет сразу и статус и текст,
-        //  чтобы было одно обращение к БД
+        try {
+            correctedText = textCorrectionService.correctErrorsInText(task.getText());
+        } catch (TextCorrectionException e) {
+            taskRepository.updateStatus(task, TaskStatus.COMPLETED_WITH_ERROR);
+            return;
+        }
+
         taskRepository.updateTextAndStatus(task, correctedText, TaskStatus.COMPLECTED);
 
         LOGGER.info("method correctTextInTask has finished work");
-    }
-
-    private TaskResponse mappingToTaskResponse(Task task) {
-
-        TaskResponse taskResponse = null;
-
-        switch (task.getStatus()) {
-            case NEW -> {taskResponse = new TaskResponse(null, task.getStatus(), null);}
-            case COMPLECTED -> {taskResponse = new TaskResponse(task.getText(), task.getStatus(), null);}
-            case COMPLETED_WITH_ERROR -> {taskResponse = new TaskResponse(null, task.getStatus(), task.getErrorMessage());}
-        }
-
-        return taskResponse;
     }
 }

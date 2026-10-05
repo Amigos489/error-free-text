@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -72,19 +73,33 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(TextCorrectionException.class)
-    public void textCorrectionException(TextCorrectionException e,
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> httpMessageNotReadableException(HttpMessageNotReadableException e,
                                                HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 e.getMessage(),
-                HttpStatus.BAD_GATEWAY.value(),
+                HttpStatus.BAD_REQUEST.value(),
                 LocalDateTime.now(),
                 request.getRequestURI());
 
         LOGGER.error(e.getMessage());
+
+        return new ResponseEntity<>(errorResponse,
+                HttpStatus.BAD_REQUEST);
     }
 
-    // Todo: для HttpMessageNotReadableException.class
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> exception(Exception e,
+                                        HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                LocalDateTime.now(),
+                request.getRequestURI());
 
-    // Todo: для Exception.class
+        LOGGER.error(e.getMessage());
+
+        return new ResponseEntity<>(errorResponse,
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

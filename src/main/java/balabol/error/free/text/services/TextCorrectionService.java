@@ -14,4 +14,6 @@ public interface TextCorrectionService {
 
     String processResponseFromSpellingCheck(String uncorrectedText,
                                             List<List<SpellResult>> spellCheckResults);
+
+    String correctErrorsInLargeText(String uncorrectedText);
 }

@@ -122,7 +122,7 @@ public class TaskServiceImpl implements TaskService {
 
             String uncorrectedText = task.getText();
 
-            String correctedText = textCorrectionService.correctErrorsInText(uncorrectedText);
+            String correctedText = textCorrectionService.correctErrorsInLargeText(uncorrectedText);
 
             taskRepository.updateTextAndStatus(task, correctedText, TaskStatus.COMPLECTED);
 

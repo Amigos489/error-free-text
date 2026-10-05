@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface TaskRepository extends JpaRepository<Task, Integer> {
 
     @Query("""
@@ -15,7 +17,7 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
         ORDER BY t.id
         LIMIT 1
     """)
-    Task findFirstByStatus(@Param("status") TaskStatus status);
+    Optional<Task> findFirstByStatus(@Param("status") TaskStatus status);
 
     @Modifying
     @Query("UPDATE Task t SET t.status = :status WHERE t = :task")
@@ -26,4 +28,10 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
     void updateTextAndStatus(@Param("task") Task task,
                              @Param("text") String text,
                              @Param("status") TaskStatus status);
+
+    @Modifying
+    @Query("UPDATE Task t SET t.status = :status, t.errorMessage = :errorMessage WHERE t = :task")
+    void updateStatusAndErrorMessage(@Param("task") Task task,
+                                     @Param("status") TaskStatus status,
+                                     @Param("errorMessage") String errorMessage);
 }

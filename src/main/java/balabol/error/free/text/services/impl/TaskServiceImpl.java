@@ -1,17 +1,15 @@
 package balabol.error.free.text.services.impl;
 
 import balabol.error.free.text.dtos.TaskCreation;
-import balabol.error.free.text.dtos.TaskResponse;
 import balabol.error.free.text.entities.Task;
 import balabol.error.free.text.enums.TaskStatus;
+import balabol.error.free.text.exceptions.NoTasksForProcessingException;
 import balabol.error.free.text.exceptions.NotFoundException;
 import balabol.error.free.text.exceptions.TextCorrectionException;
-import balabol.error.free.text.mappers.TaskMapper;
 import balabol.error.free.text.repositories.TaskRepository;
 import balabol.error.free.text.services.TaskService;
 import balabol.error.free.text.services.TextCorrectionService;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -28,11 +26,11 @@ public class TaskServiceImpl implements TaskService {
 
     private final String TASK_NOT_FOUND_MESSAGE = "task with id = %d not found";
 
+    private final String NO_TASKS_FOUND_TO_PROCESS_MESSAGE = "no tasks found to process";
+
     private final TextCorrectionService textCorrectionService;
 
     private final TaskRepository taskRepository;
-
-    private final TaskMapper taskMapper;
 
     @Override
     public int createTask(TaskCreation taskCreation) {
@@ -74,31 +72,65 @@ public class TaskServiceImpl implements TaskService {
     @Async
     @Scheduled(initialDelayString = "${spring.scheduling.fixed.delay}",
             fixedRateString = "${spring.scheduling.fixed.rate}")
-    public void correctTextInTask() {
+    public void processTask() {
 
-        LOGGER.info("method correctTextInTask has started working");
+        LOGGER.info("method processTask has started working");
 
-        Task task = taskRepository.findFirstByStatus(TaskStatus.NEW);
-
-        // Todo: Создать проверку если null,
-        //  выходим из метода и логгируем WARN,
-        //  что нет задач
-
-        if (task == null) {
-            return;
-        }
-
-        String correctedText = null;
+        Task task = null;
 
         try {
-            correctedText = textCorrectionService.correctErrorsInText(task.getText());
+            task = findTaskForProcessing();
+
+            correctedTextInTask(task);
         } catch (TextCorrectionException e) {
-            taskRepository.updateStatus(task, TaskStatus.COMPLETED_WITH_ERROR);
+            taskRepository.updateStatusAndErrorMessage(
+                    task,
+                    TaskStatus.COMPLETED_WITH_ERROR,
+                    e.getMessage()
+            );
+            return;
+        } catch (NoTasksForProcessingException e) {
             return;
         }
 
-        taskRepository.updateTextAndStatus(task, correctedText, TaskStatus.COMPLECTED);
+        LOGGER.info("method processTask has finished work");
+    }
 
-        LOGGER.info("method correctTextInTask has finished work");
+    @Override
+    public Task findTaskForProcessing() {
+
+        LOGGER.info("method findTaskForProcessing has started working");
+
+        Task task = taskRepository
+                .findFirstByStatus(TaskStatus.NEW)
+                .orElseThrow(() -> {
+                    LOGGER.warn(NO_TASKS_FOUND_TO_PROCESS_MESSAGE);
+                    return new NoTasksForProcessingException(
+                            NO_TASKS_FOUND_TO_PROCESS_MESSAGE
+                    );
+        });
+
+        LOGGER.info("method findTaskForProcessing has finished work");
+
+        return task;
+    }
+
+    @Override
+    public void correctedTextInTask(Task task) {
+        try {
+            LOGGER.info("method correctedTextInTask has started working");
+
+            String uncorrectedText = task.getText();
+
+            String correctedText = textCorrectionService.correctErrorsInText(uncorrectedText);
+
+            taskRepository.updateTextAndStatus(task, correctedText, TaskStatus.COMPLECTED);
+
+            LOGGER.info("method correctedTextInTask has finished work");
+        } catch (TextCorrectionException e) {
+            LOGGER.error("error processing task text with id = {}",
+                    task.getId());
+            throw e;
+        }
     }
 }

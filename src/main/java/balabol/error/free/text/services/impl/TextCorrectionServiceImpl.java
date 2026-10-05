@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,20 +33,10 @@ public class TextCorrectionServiceImpl implements TextCorrectionService {
     private final YandexSpellerService yandexSpellerService;
 
     @Override
-    public boolean ifRegexAreInTheText(String text, String regex) {
-
-        Pattern pattern = Pattern.compile(regex);
-
-        Matcher matcher = pattern.matcher(text);
-
-        return matcher.find();
-    }
-
-    @Override
     public String correctErrorsInText(String uncorrectedText) {
 
-        StringBuilder correctedTextBuilder
-                = new StringBuilder(uncorrectedText);
+        LOGGER.info("method correctErrorsInText has started working with parameters: {}",
+                uncorrectedText);
 
         int options = 0;
 
@@ -65,7 +54,55 @@ public class TextCorrectionServiceImpl implements TextCorrectionService {
 
         List<List<SpellResult>> spellCheckResults = sendRequestOnCheckSpelling(textRequest);
 
-        // Todo: вынести в отдельный метод обработку полученного запроса (билдер, лист со спелл резалт)
+
+        String correctedText = processResponseFromSpellingCheck(
+                uncorrectedText,
+                spellCheckResults
+        );
+
+        LOGGER.info("method correctErrorsInText has finished work, corrected text = {}",
+                correctedText);
+
+        return correctedText;
+    }
+
+    @Override
+    public boolean ifRegexAreInTheText(String text, String regex) {
+
+        LOGGER.info("method ifRegexAreInTheText has started working with parameters: text = {}, regex = {}",
+                text, regex);
+
+        Pattern pattern = Pattern.compile(regex);
+
+        Matcher matcher = pattern.matcher(text);
+
+        LOGGER.info("method ifRegexAreInTheText has finished work");
+
+        return matcher.find();
+    }
+
+    @Override
+    public List<List<SpellResult>> sendRequestOnCheckSpelling(TextRequest textRequest) {
+
+        LOGGER.info("method sendRequestOnCheckSpelling has started working with parameters: " +
+                        "textRequest = {}", textRequest);
+
+        List<List<SpellResult>> spellCheckResults = yandexSpellerService.sendTextRequest(textRequest);
+
+        LOGGER.info("method sendRequestOnCheckSpelling has finished work");
+
+        return spellCheckResults;
+    }
+
+    @Override
+    public String processResponseFromSpellingCheck(String uncorrectedText,
+                                                   List<List<SpellResult>> spellCheckResults) {
+
+        LOGGER.info("method processResponseFromSpellingCheck has started working");
+
+        StringBuilder correctedTextBuilder
+                = new StringBuilder(uncorrectedText);
+
         for (List<SpellResult> listSpellResult : spellCheckResults) {
             for (SpellResult spellResult : listSpellResult) {
 
@@ -79,11 +116,8 @@ public class TextCorrectionServiceImpl implements TextCorrectionService {
             }
         }
 
-        return correctedTextBuilder.toString();
-    }
+        LOGGER.info("method processResponseFromSpellingCheck has finished work");
 
-    @Override
-    public List<List<SpellResult>> sendRequestOnCheckSpelling(TextRequest textRequest) {
-        return yandexSpellerService.sendTextRequest(textRequest);
+        return correctedTextBuilder.toString();
     }
 }

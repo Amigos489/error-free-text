@@ -11,4 +11,7 @@ public interface TextCorrectionService {
     String correctErrorsInText(String uncorrectedText);
 
     List<List<SpellResult>> sendRequestOnCheckSpelling(TextRequest textRequest);
+
+    String processResponseFromSpellingCheck(String uncorrectedText,
+                                            List<List<SpellResult>> spellCheckResults);
 }

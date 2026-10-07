@@ -7,7 +7,4 @@ public interface TaskService {
     int createTask(TaskCreation taskCreation);
     Task findTaskById(int id);
     void processTask();
-    Task findTaskForProcessing();
-
-    void correctedTextInTask(Task task);
 }

@@ -2,8 +2,8 @@ package balabol.error.free.text.services.impl;
 
 import balabol.error.free.text.dtos.TaskCreation;
 import balabol.error.free.text.entities.Task;
+import balabol.error.free.text.enums.LanguageType;
 import balabol.error.free.text.enums.TaskStatus;
-import balabol.error.free.text.exceptions.NoTasksForProcessingException;
 import balabol.error.free.text.exceptions.NotFoundException;
 import balabol.error.free.text.exceptions.TextCorrectionException;
 import balabol.error.free.text.repositories.TaskRepository;
@@ -17,12 +17,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @Transactional
 @AllArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(TaskServiceImpl.class.getName());
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(TaskServiceImpl.class.getName());
 
     private final String TASK_NOT_FOUND_MESSAGE = "task with id = %d not found";
 
@@ -35,24 +38,26 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public int createTask(TaskCreation taskCreation) {
 
-        LOGGER.info("method createTask has started working with parameters: {}",
-                taskCreation.toString());
+        LOGGER.info("method createTask has started working with parameters: " +
+                        "text with length = {}, language = {}",
+                taskCreation.text().length(), taskCreation.language());
 
         Task createdTask = new Task(
                 taskCreation.text(),
-                taskCreation.language(),
+                LanguageType.valueOf(taskCreation.language()),
                 TaskStatus.NEW
         );
 
         createdTask = taskRepository.save(createdTask);
 
-        LOGGER.info("method createTask has finished work, task with id = {} created",
-                createdTask.getId());
+        LOGGER.info("method createTask has finished work, " +
+                        "task with id = {} created", createdTask.getId());
 
         return createdTask.getId();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Task findTaskById(int id) {
 
         LOGGER.info("method findTaskById has started working with parameters: id = {}", id);
@@ -60,8 +65,7 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository
                 .findById(id)
                 .orElseThrow(() -> new NotFoundException(
-                        String.format(TASK_NOT_FOUND_MESSAGE, id)
-                ));
+                        String.format(TASK_NOT_FOUND_MESSAGE, id)));
 
         LOGGER.info("method findTaskById has finished work");
 
@@ -77,60 +81,25 @@ public class TaskServiceImpl implements TaskService {
         LOGGER.info("method processTask has started working");
 
         Task task = null;
-
         try {
-            task = findTaskForProcessing();
+            Optional<Task> taskOptional = taskRepository.findFirstByStatus(TaskStatus.NEW);
+            if (taskOptional.isEmpty()) {
+                LOGGER.warn(NO_TASKS_FOUND_TO_PROCESS_MESSAGE);
+                return;
+            }
+            task = taskOptional.get();
 
-            correctedTextInTask(task);
-        } catch (TextCorrectionException e) {
-            taskRepository.updateStatusAndErrorMessage(
-                    task,
-                    TaskStatus.COMPLETED_WITH_ERROR,
-                    e.getMessage()
-            );
-            return;
-        } catch (NoTasksForProcessingException e) {
-            return;
-        }
-
-        LOGGER.info("method processTask has finished work");
-    }
-
-    @Override
-    public Task findTaskForProcessing() {
-
-        LOGGER.info("method findTaskForProcessing has started working");
-
-        Task task = taskRepository
-                .findFirstByStatus(TaskStatus.NEW)
-                .orElseThrow(() -> {
-                    LOGGER.warn(NO_TASKS_FOUND_TO_PROCESS_MESSAGE);
-                    return new NoTasksForProcessingException(
-                            NO_TASKS_FOUND_TO_PROCESS_MESSAGE
-                    );
-        });
-
-        LOGGER.info("method findTaskForProcessing has finished work");
-
-        return task;
-    }
-
-    @Override
-    public void correctedTextInTask(Task task) {
-        try {
-            LOGGER.info("method correctedTextInTask has started working");
-
-            String uncorrectedText = task.getText();
-
-            String correctedText = textCorrectionService.correctErrorsInLargeText(uncorrectedText);
+            String correctedText = textCorrectionService
+                    .correctSpellInText(task.getText(), task.getLanguage());
 
             taskRepository.updateTextAndStatus(task, correctedText, TaskStatus.COMPLECTED);
-
-            LOGGER.info("method correctedTextInTask has finished work");
         } catch (TextCorrectionException e) {
-            LOGGER.error("error processing task text with id = {}",
-                    task.getId());
-            throw e;
+            taskRepository.updateStatusAndErrorMessage(
+                    task, TaskStatus.COMPLETED_WITH_ERROR, e.getMessage());
+            LOGGER.error(e.getMessage());
+        } finally {
+            LOGGER.info("method processTask has finished work");
         }
+
     }
 }

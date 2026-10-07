@@ -2,7 +2,6 @@ package balabol.error.free.text.controllers;
 
 import balabol.error.free.text.dtos.ErrorResponse;
 import balabol.error.free.text.exceptions.NotFoundException;
-import balabol.error.free.text.exceptions.TextCorrectionException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,26 +39,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> methodArgumentNotValidException(MethodArgumentNotValidException e,
                                                              HttpServletRequest request) {
 
-        // Todo: вынести в отдельный метод получения хэш-мапы
-
-        Map<String, List<String>> errors = new HashMap<>();
-
-        for (FieldError error : e.getBindingResult().getFieldErrors()) {
-            if (errors.get(error.getField()) == null) {
-
-                List<String> defaultMessages = new ArrayList<>();
-
-                defaultMessages.add(error.getDefaultMessage());
-
-                errors.put(error.getField(), defaultMessages);
-            } else {
-                List<String> defaultMessages = new ArrayList<>();
-
-                defaultMessages.add(error.getDefaultMessage());
-            }
-        }
-
-        // Todo: добавить сериализацию хэш-таблицы в JSON
+        Map<String, List<String>> errors = getValidationErrors(e);
 
         ErrorResponse errorResponse = new ErrorResponse(
                 errors.toString(),
@@ -101,5 +81,26 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse,
                 HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public Map<String, List<String>> getValidationErrors(MethodArgumentNotValidException e) {
+        Map<String, List<String>> errors = new HashMap<>();
+
+        for (FieldError error : e.getBindingResult().getFieldErrors()) {
+
+            List<String> defaultMessages = new ArrayList<>();
+
+            if (errors.get(error.getField()) == null) {
+
+                defaultMessages.add(error.getDefaultMessage());
+
+                errors.put(error.getField(), defaultMessages);
+            } else {
+
+                defaultMessages.add(error.getDefaultMessage());
+            }
+        }
+
+        return errors;
     }
 }

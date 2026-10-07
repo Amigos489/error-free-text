@@ -7,6 +7,7 @@ import balabol.error.free.text.enums.TaskStatus;
 import balabol.error.free.text.exceptions.NotFoundException;
 import balabol.error.free.text.repositories.TaskRepository;
 import balabol.error.free.text.services.impl.TaskServiceImpl;
+import balabol.error.free.text.services.impl.TextCorrectionServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Test TaskServiceImpl")
@@ -26,6 +29,9 @@ public class TaskServiceImplTest {
 
     @InjectMocks
     private TaskServiceImpl taskService;
+
+    @Mock
+    private TextCorrectionServiceImpl textCorrectionService;
 
     @Mock
     private TaskRepository taskRepository;
@@ -44,7 +50,7 @@ public class TaskServiceImplTest {
         expectedTask.setId(testId);
 
         TaskCreation taskCreationTest
-                = new TaskCreation("text test", LanguageType.RU);
+                = new TaskCreation("text test", "RU");
 
         Mockito.when(taskRepository.save(any(Task.class)))
                 .thenReturn(expectedTask);
@@ -86,5 +92,32 @@ public class TaskServiceImplTest {
 
         Assertions.assertThrows(NotFoundException.class,
                 () -> taskService.findTaskById(testId));
+    }
+
+    @Test
+    @DisplayName("When method processTask Then void")
+    void processTask_void() {
+
+        int testId = 1;
+
+        Task expectedTask = new Task(
+                "text test",
+                LanguageType.RU,
+                TaskStatus.NEW
+        );
+        expectedTask.setId(testId);
+
+        Mockito.when(taskRepository.findFirstByStatus(TaskStatus.NEW))
+                .thenReturn(Optional.of(expectedTask));
+
+        Mockito.when(textCorrectionService
+                .correctSpellInText(expectedTask.getText(), expectedTask.getLanguage()))
+                .thenReturn("corrected text test");
+
+        Assertions.assertDoesNotThrow(() -> taskService.processTask());
+        verify(taskRepository, times(1))
+                .findFirstByStatus(TaskStatus.NEW);
+        verify(textCorrectionService, times(1))
+                .correctSpellInText(expectedTask.getText(), expectedTask.getLanguage());
     }
 }

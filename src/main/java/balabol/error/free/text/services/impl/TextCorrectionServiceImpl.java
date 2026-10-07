@@ -2,6 +2,7 @@ package balabol.error.free.text.services.impl;
 
 import balabol.error.free.text.dtos.SpellResult;
 import balabol.error.free.text.dtos.TextRequest;
+import balabol.error.free.text.enums.LanguageType;
 import balabol.error.free.text.services.TextCorrectionService;
 import balabol.error.free.text.services.YandexSpellerService;
 import lombok.AllArgsConstructor;
@@ -36,236 +37,183 @@ public class TextCorrectionServiceImpl implements TextCorrectionService {
     private final YandexSpellerService yandexSpellerService;
 
     @Override
-    public String correctErrorsInText(String uncorrectedText) {
+    public String correctSpellInText(String uncorrectedText,
+                                     LanguageType language) {
 
-        LOGGER.info("method correctErrorsInText has started working with parameters: {}",
-                uncorrectedText);
+        LOGGER.info("method correctSpellInText has started working with parameters: " +
+                "text with length = {}, language = {}",
+                uncorrectedText.length(), language);
 
-        int options = 0;
+        StringBuilder correctedTextBuilder = new StringBuilder();
 
-        if (ifRegexAreInTheText(uncorrectedText,
-                regexForCheckNumbersInText)) {
-            options += IGNORE_DIGITS;
-        }
-
-        if (ifRegexAreInTheText(uncorrectedText,
-                regexForCheckUrlsInText)) {
-            options += IGNORE_URLS;
-        }
-
-        // Todo: Логика если текст больше 10000 символов
+        int options = getOptionsForText(uncorrectedText);
 
         if (uncorrectedText.length() > MAX_TEXT_LENGTH) {
 
-            StringBuilder correctedTextBuilder
-                    = new StringBuilder(uncorrectedText);
+            List<String> textForParts = splitTextOnPart(uncorrectedText, MAX_TEXT_LENGTH);
 
-            int globalPosition = 0;
+            for (String partText : textForParts) {
 
-            int index = 0;
+                TextRequest textRequest = new TextRequest(partText, options, language);
 
-            List<String> text = new ArrayList<>();
-            while (index < uncorrectedText.length()) {
-                text.add(uncorrectedText.substring(index,
-                        Math.min(index + MAX_TEXT_LENGTH, uncorrectedText.length())));
-                index += MAX_TEXT_LENGTH;
-            }
+                StringBuilder partTextBuilder = new StringBuilder(partText);
 
-            LOGGER.info("number of parts = {}", text.size());
-
-            for (String partText : text) {
-
-                // Todo: как лучше поэтапно отправлять
-                //  и менять или сразу всё отправить
-                //  и потом обрабатывать по списку (спросить или замерить)
-
-                TextRequest textRequest = new TextRequest(partText, options);
-
-                List<List<SpellResult>> spellCheckResults = sendRequestOnCheckSpelling(textRequest);
-
-                correctedTextBuilder = processResponseFromSpellingCheck(correctedTextBuilder, spellCheckResults);
-
-                globalPosition += MAX_TEXT_LENGTH;
+                correctedTextBuilder.append(processText(textRequest, partTextBuilder));
             }
 
             return correctedTextBuilder.toString();
         }
 
-        TextRequest textRequest = new TextRequest(uncorrectedText, options);
+        correctedTextBuilder.append(uncorrectedText);
 
-        List<List<SpellResult>> spellCheckResults = sendRequestOnCheckSpelling(textRequest);
+        TextRequest textRequest = new TextRequest(uncorrectedText, options, language);
 
+        String correctedText = processText(textRequest, correctedTextBuilder);
 
-        String correctedText = processResponseFromSpellingCheck(
-                uncorrectedText,
-                spellCheckResults
-        );
-
-        LOGGER.info("method correctErrorsInText has finished work, corrected text = {}",
-                correctedText);
+        LOGGER.info("method correctSpellInText has finished work");
 
         return correctedText;
     }
 
     @Override
-    public boolean ifRegexAreInTheText(String text, String regex) {
+    public String processText(TextRequest textRequest, StringBuilder textBuilder) {
 
-        LOGGER.info("method ifRegexAreInTheText has started working with parameters: text = {}, regex = {}",
-                text, regex);
+        LOGGER.info("method processText has started working with parameters: " +
+                "text with length = {}, options = {}, language = {}",
+                textRequest.text().length(), textRequest.options(), textRequest.language());
 
-        Pattern pattern = Pattern.compile(regex);
+        List<List<SpellResult>> response = sendRequestOnCheckSpellText(textRequest);
 
-        Matcher matcher = pattern.matcher(text);
+        String text = processResponseFromTextSpellCheck(response, textBuilder).toString();
 
-        LOGGER.info("method ifRegexAreInTheText has finished work");
+        LOGGER.info("method processText has finished work");
 
-        return matcher.find();
+        return text;
     }
 
     @Override
-    public List<List<SpellResult>> sendRequestOnCheckSpelling(TextRequest textRequest) {
+    public List<List<SpellResult>> sendRequestOnCheckSpellText(TextRequest textRequest) {
 
-        LOGGER.info("method sendRequestOnCheckSpelling has started working with parameters: " +
-                        "textRequest = {}", textRequest);
+        LOGGER.info("method sendRequestOnCheckSpellText has started working with parameters: " +
+                        "text with size = {}, options = {}, language = {}",
+                textRequest.text().length(), textRequest.options(), textRequest.language());
 
         List<List<SpellResult>> spellCheckResults = yandexSpellerService.sendTextRequest(textRequest);
 
-        LOGGER.info("method sendRequestOnCheckSpelling has finished work");
+        LOGGER.info("method sendRequestOnCheckSpellText has finished work");
 
         return spellCheckResults;
     }
 
     @Override
-    public String processResponseFromSpellingCheck(String uncorrectedText,
-                                                   List<List<SpellResult>> spellCheckResults) {
+    public StringBuilder processResponseFromTextSpellCheck(List<List<SpellResult>> spellCheckResults,
+                                                           StringBuilder textBuilder) {
+        LOGGER.info("method processResponseFromTextSpellCheck has started working");
 
-        LOGGER.info("method processResponseFromSpellingCheck has started working");
-
-        StringBuilder correctedTextBuilder
-                = new StringBuilder(uncorrectedText);
+        int offset = 0;
 
         for (List<SpellResult> listSpellResult : spellCheckResults) {
             for (SpellResult spellResult : listSpellResult) {
 
-                if (spellResult.s().isEmpty()) {
-                    continue;
-                }
+                if (spellResult.s().isEmpty()) continue;
 
-                correctedTextBuilder.replace(spellResult.pos(),
-                        (spellResult.pos() + spellResult.len()),
-                        spellResult.s().get(0));
-            }
-        }
-
-        LOGGER.info("method processResponseFromSpellingCheck has finished work");
-
-        return correctedTextBuilder.toString();
-    }
-
-    public StringBuilder processResponseFromSpellingCheck(StringBuilder textBuilder,
-                                                          List<List<SpellResult>> spellCheckResults) {
-
-        LOGGER.info("method _ has started working");
-
-        int bias = 0;
-
-        for (List<SpellResult> listSpellResult : spellCheckResults) {
-            for (SpellResult spellResult : listSpellResult) {
-
-                if (spellResult.s().isEmpty()) {
-                    continue;
-                }
-
-                //Берём первое слово из списка
+                // Для замены берём первое слово из подсказок
                 String wordForReplace = spellResult.s().get(0);
 
-                int startPosition = spellResult.pos() + bias;
+                int startPosition = spellResult.pos() + offset;
 
                 int endPosition = startPosition + spellResult.len();
 
-                LOGGER.info("startPosition = {}, endPosition = {}, bias = {}, wordForReplace = {}",
-                        startPosition, endPosition, bias, wordForReplace);
-
-                LOGGER.info(textBuilder.substring(startPosition, endPosition));
                 textBuilder.replace(startPosition, endPosition, wordForReplace);
 
-                LOGGER.info(textBuilder.toString());
-
-                if (wordForReplace.length() > spellResult.word().length()) {
-                    bias += wordForReplace.length() - spellResult.word().length();
-                }
-
-                if (wordForReplace.length() < spellResult.word().length()) {
-                    bias -= spellResult.word().length() - wordForReplace.length();
-                }
+                offset = changeOffset(spellResult.word(), wordForReplace, offset);
             }
         }
 
-        LOGGER.info("method _ has finished work");
+        LOGGER.info("method processResponseFromTextSpellCheck has finished work");
 
         return textBuilder;
     }
 
     @Override
-    public String correctErrorsInLargeText(String uncorrectedText) {
+    public boolean ifRegexAreInTheText(String text, String regex) {
+
+        LOGGER.info("method ifRegexAreInTheText has started working with parameters: " +
+                "text with length = {}, regex = {}", text.length(), regex);
+
+        Pattern pattern = Pattern.compile(regex);
+
+        Matcher matcher = pattern.matcher(text);
+
+        boolean result = matcher.find();
+
+        LOGGER.info("method ifRegexAreInTheText has finished work, result = {}", result);
+
+        return result;
+    }
+
+    @Override
+    public int changeOffset(String originalWord, String wordForReplace, int offset) {
+
+        LOGGER.debug("method changeOffset has started working with parameters: " +
+                "original word = {}, word for replace = {}, offset = {}",
+                originalWord, wordForReplace, offset);
+
+        if (wordForReplace.length() > originalWord.length()) {
+            offset += wordForReplace.length() - originalWord.length();
+        }
+
+        if (wordForReplace.length() < originalWord.length()) {
+            offset -= originalWord.length() - wordForReplace.length();
+        }
+
+        LOGGER.debug("method changeOffset has finished work, offset = {}",
+                offset);
+
+        return offset;
+    }
+
+    @Override
+    public List<String> splitTextOnPart(String text, int maxLengthPart) {
+
+        LOGGER.debug("method splitTextOnPart has started working with parameters: " +
+                        "text with length = {}", text.length());
+
+        List<String> textFromParts = new ArrayList<>();
+
+        int index = 0;
+
+        while (index < text.length()) {
+            textFromParts.add(text.substring(index,
+                    Math.min(index + maxLengthPart, text.length())));
+            index += maxLengthPart;
+        }
+
+        LOGGER.debug("method splitTextOnPart has finished work, " +
+                        "text is divided into {} parts", textFromParts.size());
+
+        return textFromParts;
+    }
+
+    @Override
+    public int getOptionsForText(String text) {
+
+        LOGGER.debug("method getOptionsForText has started working with parameters: " +
+                "text with length = {}", text.length());
 
         int options = 0;
 
-        if (ifRegexAreInTheText(uncorrectedText,
-                regexForCheckNumbersInText)) {
+        if (ifRegexAreInTheText(text, regexForCheckNumbersInText)) {
             options += IGNORE_DIGITS;
         }
 
-        if (ifRegexAreInTheText(uncorrectedText,
-                regexForCheckUrlsInText)) {
+        if (ifRegexAreInTheText(text, regexForCheckUrlsInText)) {
             options += IGNORE_URLS;
         }
 
-        StringBuilder uncorrectedTextBuilder;
+        LOGGER.debug("method getOptionsForText has finished work, " +
+                        "options = {}", options);
 
-        if (uncorrectedText.length() > MAX_TEXT_LENGTH) {
-
-            uncorrectedTextBuilder = new StringBuilder();
-
-            //Todo: отдельный метод
-            int index = 0;
-
-            List<String> textFromParts = new ArrayList<>();
-            while (index < uncorrectedText.length()) {
-                textFromParts.add(uncorrectedText.substring(index,
-                        Math.min(index + MAX_TEXT_LENGTH, uncorrectedText.length())));
-                index += MAX_TEXT_LENGTH;
-            }
-
-            for (String textPart : textFromParts) {
-
-                StringBuilder textPartBuilder = new StringBuilder(textPart);
-
-                TextRequest textRequest = new TextRequest(textPart, options);
-
-                List<List<SpellResult>> spellCheckResults = sendRequestOnCheckSpelling(textRequest);
-
-                textPartBuilder = processResponseFromSpellingCheck(
-                        textPartBuilder,
-                        spellCheckResults
-                );
-
-                uncorrectedTextBuilder.append(textPartBuilder);
-            }
-
-        } else {
-            uncorrectedTextBuilder = new StringBuilder(uncorrectedText);
-
-            TextRequest textRequest = new TextRequest(uncorrectedText, options);
-
-            List<List<SpellResult>> spellCheckResults = sendRequestOnCheckSpelling(textRequest);
-
-            uncorrectedTextBuilder = processResponseFromSpellingCheck(
-                    uncorrectedTextBuilder,
-                    spellCheckResults
-            );
-        }
-
-        return uncorrectedTextBuilder.toString();
+        return options;
     }
 }

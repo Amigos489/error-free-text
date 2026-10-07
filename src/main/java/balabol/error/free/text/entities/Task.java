@@ -23,22 +23,24 @@ public class Task {
             nullable = false)
     private String text;
 
-    @Column(name = "language",
-            nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LanguageType language;
-
     @Column(name = "status",
-            nullable = false)
+            nullable = false,
+            length = 20)
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
-    //Todo: подумать над размером сообщения
-    @Column(name = "error_message",
-            length = 60)
+    @Column(name = "language",
+            nullable = false,
+            length = 2)
+    @Enumerated(EnumType.STRING)
+    private LanguageType language;
+
+    @Column(name = "error_message")
     private String errorMessage;
 
-    public Task(String text, LanguageType language, TaskStatus status) {
+    public Task(String text,
+                LanguageType language,
+                TaskStatus status) {
         this.text = text;
         this.language = language;
         this.status = status;

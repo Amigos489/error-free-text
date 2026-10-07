@@ -2,18 +2,27 @@ package balabol.error.free.text.services;
 
 import balabol.error.free.text.dtos.SpellResult;
 import balabol.error.free.text.dtos.TextRequest;
+import balabol.error.free.text.enums.LanguageType;
 
 import java.util.List;
 
 public interface TextCorrectionService {
+
+    String correctSpellInText(String uncorrectedText,
+                              LanguageType language);
+
+    String processText(TextRequest textRequest, StringBuilder textBuilder);
+
     boolean ifRegexAreInTheText(String text, String regex);
 
-    String correctErrorsInText(String uncorrectedText);
+    List<List<SpellResult>> sendRequestOnCheckSpellText(TextRequest textRequest);
 
-    List<List<SpellResult>> sendRequestOnCheckSpelling(TextRequest textRequest);
+    StringBuilder processResponseFromTextSpellCheck(List<List<SpellResult>> spellCheckResults,
+                                                    StringBuilder textBuilder);
 
-    String processResponseFromSpellingCheck(String uncorrectedText,
-                                            List<List<SpellResult>> spellCheckResults);
+    int changeOffset(String originalWord, String wordForReplace, int offset);
 
-    String correctErrorsInLargeText(String uncorrectedText);
+    List<String> splitTextOnPart(String text, int maxLengthPart);
+
+    int getOptionsForText(String text);
 }

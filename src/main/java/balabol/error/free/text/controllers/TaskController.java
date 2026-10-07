@@ -6,6 +6,8 @@ import balabol.error.free.text.mappers.TaskMapper;
 import balabol.error.free.text.services.TaskService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,21 +17,43 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class TaskController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskController.class.getName());
+
     private final TaskService taskService;
 
     private final TaskMapper taskMapper;
 
     @PostMapping
     public ResponseEntity<?> createTask(@Valid @RequestBody TaskCreation taskCreation) {
-        return new ResponseEntity<>(taskService.createTask(taskCreation), HttpStatus.CREATED);
+
+        LOGGER.info("method createTask received request with parameters: " +
+                        "text with length = {}, language = {}",
+                taskCreation.text().length(), taskCreation.language());
+
+        ResponseEntity<?> response = new ResponseEntity<>(
+                taskService.createTask(taskCreation),
+                HttpStatus.CREATED);
+
+        LOGGER.info("method createTask returned response with code = {}",
+                response.getStatusCode());
+
+        return response;
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findTaskById(@PathVariable("id") int id) {
 
+        LOGGER.info("method findTaskById received request with parameters: id = {}", id);
+
         Task task = taskService.findTaskById(id);
 
-        return new ResponseEntity<>(
-                taskMapper.mappingToTaskResponse(task), HttpStatus.OK);
+        ResponseEntity<?> response = new ResponseEntity<>(
+                taskMapper.mappingToTaskResponse(task),
+                HttpStatus.OK);
+
+        LOGGER.info("method findTaskById returned response with code = {}",
+                response.getStatusCode());
+
+        return response;
     }
 }

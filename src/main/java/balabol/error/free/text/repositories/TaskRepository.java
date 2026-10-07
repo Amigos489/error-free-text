@@ -20,10 +20,6 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
     Optional<Task> findFirstByStatus(@Param("status") TaskStatus status);
 
     @Modifying
-    @Query("UPDATE Task t SET t.status = :status WHERE t = :task")
-    void updateStatus(@Param("task") Task task, @Param("status") TaskStatus status);
-
-    @Modifying
     @Query("UPDATE Task t SET t.text = :text, t.status = :status WHERE t = :task")
     void updateTextAndStatus(@Param("task") Task task,
                              @Param("text") String text,

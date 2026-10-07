@@ -8,15 +8,16 @@ import balabol.error.free.text.enums.TaskStatus;
 import balabol.error.free.text.exceptions.NotFoundException;
 import balabol.error.free.text.mappers.TaskMapper;
 import balabol.error.free.text.services.TaskService;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.json.JsonMapper;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(TaskController.class)
 public class TaskControllerTest {
 
+    private static JsonMapper jsonMapper;
+
     @MockitoBean
     private TaskService taskService;
 
@@ -38,18 +41,17 @@ public class TaskControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private JsonMapper jsonMapper;
+    @BeforeAll
+    public static void setBeforeAll() {
+        jsonMapper = new JsonMapper();
+    }
 
     @Test
     @DisplayName("When method createTask Then status created and task id")
     public void createTask_statusCreatedAndTaskId() throws Exception {
 
         TaskCreation taskCreationTest
-                = new TaskCreation(
-                        "textTest",
-                LanguageType.RU
-        );
+                = new TaskCreation("textTest", "RU");
 
         int testId = 1;
 

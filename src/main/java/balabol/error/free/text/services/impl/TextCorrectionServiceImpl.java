@@ -1,10 +1,10 @@
-package balabol.error.free.text.services.impl;
+package balabol.error.free.text.unit.services.impl;
 
-import balabol.error.free.text.dtos.SpellResult;
-import balabol.error.free.text.dtos.TextRequest;
-import balabol.error.free.text.enums.LanguageType;
-import balabol.error.free.text.services.TextCorrectionService;
-import balabol.error.free.text.services.YandexSpellerService;
+import balabol.error.free.text.unit.dtos.SpellResult;
+import balabol.error.free.text.unit.dtos.TextRequest;
+import balabol.error.free.text.unit.enums.LanguageType;
+import balabol.error.free.text.unit.services.TextCorrectionService;
+import balabol.error.free.text.unit.services.YandexSpellerService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,6 @@
-package balabol.error.free.text.dtos;
+package balabol.error.free.text.unit.dtos;
 
-import balabol.error.free.text.enums.LanguageType;
+import balabol.error.free.text.unit.enums.LanguageType;
 
 public record TextRequest(
         String text,

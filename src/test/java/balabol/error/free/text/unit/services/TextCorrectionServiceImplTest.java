@@ -1,10 +1,10 @@
-package balabol.error.free.text.services;
+package balabol.error.free.text.unit.services;
 
-import balabol.error.free.text.dtos.SpellResult;
-import balabol.error.free.text.dtos.TextRequest;
-import balabol.error.free.text.enums.LanguageType;
-import balabol.error.free.text.services.impl.TextCorrectionServiceImpl;
-import balabol.error.free.text.services.impl.YandexSpellerServiceImpl;
+import balabol.error.free.text.unit.dtos.SpellResult;
+import balabol.error.free.text.unit.dtos.TextRequest;
+import balabol.error.free.text.unit.enums.LanguageType;
+import balabol.error.free.text.unit.services.impl.TextCorrectionServiceImpl;
+import balabol.error.free.text.unit.services.impl.YandexSpellerServiceImpl;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

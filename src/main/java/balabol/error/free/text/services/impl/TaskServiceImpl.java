@@ -1,14 +1,14 @@
-package balabol.error.free.text.services.impl;
+package balabol.error.free.text.unit.services.impl;
 
-import balabol.error.free.text.dtos.TaskCreation;
-import balabol.error.free.text.entities.Task;
-import balabol.error.free.text.enums.LanguageType;
-import balabol.error.free.text.enums.TaskStatus;
-import balabol.error.free.text.exceptions.NotFoundException;
-import balabol.error.free.text.exceptions.TextCorrectionException;
-import balabol.error.free.text.repositories.TaskRepository;
-import balabol.error.free.text.services.TaskService;
-import balabol.error.free.text.services.TextCorrectionService;
+import balabol.error.free.text.unit.dtos.TaskCreation;
+import balabol.error.free.text.unit.entities.Task;
+import balabol.error.free.text.unit.enums.LanguageType;
+import balabol.error.free.text.unit.enums.TaskStatus;
+import balabol.error.free.text.unit.exceptions.NotFoundException;
+import balabol.error.free.text.unit.exceptions.TextCorrectionException;
+import balabol.error.free.text.unit.repositories.TaskRepository;
+import balabol.error.free.text.unit.services.TaskService;
+import balabol.error.free.text.unit.services.TextCorrectionService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

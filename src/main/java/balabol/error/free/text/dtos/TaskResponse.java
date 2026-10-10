@@ -1,6 +1,6 @@
-package balabol.error.free.text.dtos;
+package balabol.error.free.text.unit.dtos;
 
-import balabol.error.free.text.enums.TaskStatus;
+import balabol.error.free.text.unit.enums.TaskStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 public record TaskResponse(

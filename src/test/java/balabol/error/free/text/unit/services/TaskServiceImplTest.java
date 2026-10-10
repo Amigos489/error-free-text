@@ -1,13 +1,13 @@
-package balabol.error.free.text.services;
+package balabol.error.free.text.unit.services;
 
-import balabol.error.free.text.dtos.TaskCreation;
-import balabol.error.free.text.entities.Task;
-import balabol.error.free.text.enums.LanguageType;
-import balabol.error.free.text.enums.TaskStatus;
-import balabol.error.free.text.exceptions.NotFoundException;
-import balabol.error.free.text.repositories.TaskRepository;
-import balabol.error.free.text.services.impl.TaskServiceImpl;
-import balabol.error.free.text.services.impl.TextCorrectionServiceImpl;
+import balabol.error.free.text.unit.dtos.TaskCreation;
+import balabol.error.free.text.unit.entities.Task;
+import balabol.error.free.text.unit.enums.LanguageType;
+import balabol.error.free.text.unit.enums.TaskStatus;
+import balabol.error.free.text.unit.exceptions.NotFoundException;
+import balabol.error.free.text.unit.repositories.TaskRepository;
+import balabol.error.free.text.unit.services.impl.TaskServiceImpl;
+import balabol.error.free.text.unit.services.impl.TextCorrectionServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

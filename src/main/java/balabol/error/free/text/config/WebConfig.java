@@ -1,4 +1,4 @@
-package balabol.error.free.text.config;
+package balabol.error.free.text.unit.config;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

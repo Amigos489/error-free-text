@@ -1,7 +1,7 @@
-package balabol.error.free.text.entities;
+package balabol.error.free.text.unit.entities;
 
-import balabol.error.free.text.enums.LanguageType;
-import balabol.error.free.text.enums.TaskStatus;
+import balabol.error.free.text.unit.enums.LanguageType;
+import balabol.error.free.text.unit.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

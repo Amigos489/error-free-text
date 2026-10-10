@@ -1,4 +1,4 @@
-package balabol.error.free.text.dtos;
+package balabol.error.free.text.unit.dtos;
 
 import java.util.List;
 

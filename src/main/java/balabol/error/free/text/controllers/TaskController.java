@@ -1,9 +1,9 @@
-package balabol.error.free.text.controllers;
+package balabol.error.free.text.unit.controllers;
 
-import balabol.error.free.text.dtos.TaskCreation;
-import balabol.error.free.text.entities.Task;
-import balabol.error.free.text.mappers.TaskMapper;
-import balabol.error.free.text.services.TaskService;
+import balabol.error.free.text.unit.dtos.TaskCreation;
+import balabol.error.free.text.unit.entities.Task;
+import balabol.error.free.text.unit.mappers.TaskMapper;
+import balabol.error.free.text.unit.services.TaskService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;

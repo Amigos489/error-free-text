@@ -1,4 +1,4 @@
-package balabol.error.free.text;
+package balabol.error.free.text.unit;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

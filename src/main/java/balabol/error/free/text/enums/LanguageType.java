@@ -1,4 +1,4 @@
-package balabol.error.free.text.enums;
+package balabol.error.free.text.unit.enums;
 
 public enum LanguageType {
     RU, EN

@@ -1,9 +1,9 @@
-package balabol.error.free.text.services.impl;
+package balabol.error.free.text.unit.services.impl;
 
-import balabol.error.free.text.dtos.SpellResult;
-import balabol.error.free.text.dtos.TextRequest;
-import balabol.error.free.text.exceptions.TextCorrectionException;
-import balabol.error.free.text.services.YandexSpellerService;
+import balabol.error.free.text.unit.dtos.SpellResult;
+import balabol.error.free.text.unit.dtos.TextRequest;
+import balabol.error.free.text.unit.exceptions.TextCorrectionException;
+import balabol.error.free.text.unit.services.YandexSpellerService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.json.JsonMapper;

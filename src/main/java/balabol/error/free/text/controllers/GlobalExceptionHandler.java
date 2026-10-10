@@ -1,7 +1,7 @@
-package balabol.error.free.text.controllers;
+package balabol.error.free.text.unit.controllers;
 
-import balabol.error.free.text.dtos.ErrorResponse;
-import balabol.error.free.text.exceptions.NotFoundException;
+import balabol.error.free.text.unit.dtos.ErrorResponse;
+import balabol.error.free.text.unit.exceptions.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

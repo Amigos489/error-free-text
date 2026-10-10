@@ -1,4 +1,4 @@
-package balabol.error.free.text.dtos;
+package balabol.error.free.text.unit.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

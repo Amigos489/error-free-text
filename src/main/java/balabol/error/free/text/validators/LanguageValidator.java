@@ -1,7 +1,7 @@
-package balabol.error.free.text.validators;
+package balabol.error.free.text.unit.validators;
 
-import balabol.error.free.text.annotations.Language;
-import balabol.error.free.text.enums.LanguageType;
+import balabol.error.free.text.unit.annotations.Language;
+import balabol.error.free.text.unit.enums.LanguageType;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

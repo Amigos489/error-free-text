@@ -1,7 +1,7 @@
-package balabol.error.free.text.repositories;
+package balabol.error.free.text.unit.repositories;
 
-import balabol.error.free.text.entities.Task;
-import balabol.error.free.text.enums.TaskStatus;
+import balabol.error.free.text.unit.entities.Task;
+import balabol.error.free.text.unit.enums.TaskStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

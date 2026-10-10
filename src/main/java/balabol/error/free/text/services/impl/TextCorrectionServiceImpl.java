@@ -1,10 +1,10 @@
-package balabol.error.free.text.unit.services.impl;
+package balabol.error.free.text.services.impl;
 
-import balabol.error.free.text.unit.dtos.SpellResult;
-import balabol.error.free.text.unit.dtos.TextRequest;
-import balabol.error.free.text.unit.enums.LanguageType;
-import balabol.error.free.text.unit.services.TextCorrectionService;
-import balabol.error.free.text.unit.services.YandexSpellerService;
+import balabol.error.free.text.dtos.SpellResult;
+import balabol.error.free.text.dtos.TextRequest;
+import balabol.error.free.text.enums.LanguageType;
+import balabol.error.free.text.services.TextCorrectionService;
+import balabol.error.free.text.services.YandexSpellerService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,9 +82,9 @@ public class TextCorrectionServiceImpl implements TextCorrectionService {
                 "text with length = {}, options = {}, language = {}",
                 textRequest.text().length(), textRequest.options(), textRequest.language());
 
-        List<List<SpellResult>> response = sendRequestOnCheckSpellText(textRequest);
+        List<List<SpellResult>> listSpellResults = sendRequestOnCheckSpellText(textRequest);
 
-        String text = processResponseFromTextSpellCheck(response, textBuilder).toString();
+        String text = processResponseFromTextSpellCheck(listSpellResults, textBuilder).toString();
 
         LOGGER.info("method processText has finished work");
 
@@ -98,26 +98,26 @@ public class TextCorrectionServiceImpl implements TextCorrectionService {
                         "text with size = {}, options = {}, language = {}",
                 textRequest.text().length(), textRequest.options(), textRequest.language());
 
-        List<List<SpellResult>> spellCheckResults = yandexSpellerService.sendTextRequest(textRequest);
+        List<List<SpellResult>> listSpellResults = yandexSpellerService.sendTextRequest(textRequest);
 
         LOGGER.info("method sendRequestOnCheckSpellText has finished work");
 
-        return spellCheckResults;
+        return listSpellResults;
     }
 
     @Override
-    public StringBuilder processResponseFromTextSpellCheck(List<List<SpellResult>> spellCheckResults,
+    public StringBuilder processResponseFromTextSpellCheck(List<List<SpellResult>> listSpellResults,
                                                            StringBuilder textBuilder) {
         LOGGER.info("method processResponseFromTextSpellCheck has started working");
 
         int offset = 0;
 
-        for (List<SpellResult> listSpellResult : spellCheckResults) {
-            for (SpellResult spellResult : listSpellResult) {
+        for (List<SpellResult> SpellResults : listSpellResults) {
+            for (SpellResult spellResult : SpellResults) {
 
                 if (spellResult.s().isEmpty()) continue;
 
-                // Для замены берём первое слово из подсказок
+                // first hint is used to replace the word
                 String wordForReplace = spellResult.s().get(0);
 
                 int startPosition = spellResult.pos() + offset;

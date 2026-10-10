@@ -1,7 +1,7 @@
-package balabol.error.free.text.unit.services;
+package balabol.error.free.text.services;
 
-import balabol.error.free.text.unit.dtos.SpellResult;
-import balabol.error.free.text.unit.dtos.TextRequest;
+import balabol.error.free.text.dtos.SpellResult;
+import balabol.error.free.text.dtos.TextRequest;
 import org.springframework.util.MultiValueMap;
 
 import java.util.List;

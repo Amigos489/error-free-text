@@ -1,14 +1,14 @@
-package balabol.error.free.text.unit.services.impl;
+package balabol.error.free.text.services.impl;
 
-import balabol.error.free.text.unit.dtos.TaskCreation;
-import balabol.error.free.text.unit.entities.Task;
-import balabol.error.free.text.unit.enums.LanguageType;
-import balabol.error.free.text.unit.enums.TaskStatus;
-import balabol.error.free.text.unit.exceptions.NotFoundException;
-import balabol.error.free.text.unit.exceptions.TextCorrectionException;
-import balabol.error.free.text.unit.repositories.TaskRepository;
-import balabol.error.free.text.unit.services.TaskService;
-import balabol.error.free.text.unit.services.TextCorrectionService;
+import balabol.error.free.text.dtos.TaskCreation;
+import balabol.error.free.text.entities.Task;
+import balabol.error.free.text.enums.LanguageType;
+import balabol.error.free.text.enums.TaskStatus;
+import balabol.error.free.text.exceptions.TaskNotFoundException;
+import balabol.error.free.text.exceptions.TextCorrectionException;
+import balabol.error.free.text.repositories.TaskRepository;
+import balabol.error.free.text.services.TaskService;
+import balabol.error.free.text.services.TextCorrectionService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +64,7 @@ public class TaskServiceImpl implements TaskService {
 
         Task task = taskRepository
                 .findById(id)
-                .orElseThrow(() -> new NotFoundException(
+                .orElseThrow(() -> new TaskNotFoundException(
                         String.format(TASK_NOT_FOUND_MESSAGE, id)));
 
         LOGGER.info("method findTaskById has finished work");

@@ -1,7 +1,7 @@
-package balabol.error.free.text.unit.dtos;
+package balabol.error.free.text.dtos;
 
-import balabol.error.free.text.unit.annotations.Language;
-import balabol.error.free.text.unit.annotations.NoAllNumbersOrSpecSymbols;
+import balabol.error.free.text.annotations.Language;
+import balabol.error.free.text.annotations.NoAllNumbersOrSpecSymbols;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

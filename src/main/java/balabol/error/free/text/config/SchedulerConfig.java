@@ -1,4 +1,4 @@
-package balabol.error.free.text.unit.config;
+package balabol.error.free.text.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;

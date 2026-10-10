@@ -1,13 +1,14 @@
 package balabol.error.free.text.unit.controllers;
 
-import balabol.error.free.text.unit.dtos.TaskCreation;
-import balabol.error.free.text.unit.dtos.TaskResponse;
-import balabol.error.free.text.unit.entities.Task;
-import balabol.error.free.text.unit.enums.LanguageType;
-import balabol.error.free.text.unit.enums.TaskStatus;
-import balabol.error.free.text.unit.exceptions.NotFoundException;
-import balabol.error.free.text.unit.mappers.TaskMapper;
-import balabol.error.free.text.unit.services.TaskService;
+import balabol.error.free.text.controllers.TaskController;
+import balabol.error.free.text.dtos.TaskCreation;
+import balabol.error.free.text.dtos.TaskResponse;
+import balabol.error.free.text.entities.Task;
+import balabol.error.free.text.enums.LanguageType;
+import balabol.error.free.text.enums.TaskStatus;
+import balabol.error.free.text.exceptions.TaskNotFoundException;
+import balabol.error.free.text.mappers.TaskMapper;
+import balabol.error.free.text.services.TaskService;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@DisplayName("Test TaskController")
+@DisplayName("unit tests for TaskController")
 @WebMvcTest(TaskController.class)
 public class TaskControllerTest {
 
@@ -102,7 +103,7 @@ public class TaskControllerTest {
         int testId = 999;
 
         Mockito.when(taskService.findTaskById(testId))
-                .thenThrow(NotFoundException.class);
+                .thenThrow(TaskNotFoundException.class);
 
         mockMvc.perform(get("/api/tasks/{id}", testId))
                 .andExpect(status().isNotFound());

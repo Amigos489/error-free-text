@@ -1,10 +1,10 @@
 package balabol.error.free.text.unit.services;
 
-import balabol.error.free.text.unit.dtos.SpellResult;
-import balabol.error.free.text.unit.dtos.TextRequest;
-import balabol.error.free.text.unit.enums.LanguageType;
-import balabol.error.free.text.unit.services.impl.TextCorrectionServiceImpl;
-import balabol.error.free.text.unit.services.impl.YandexSpellerServiceImpl;
+import balabol.error.free.text.dtos.SpellResult;
+import balabol.error.free.text.dtos.TextRequest;
+import balabol.error.free.text.enums.LanguageType;
+import balabol.error.free.text.services.impl.TextCorrectionServiceImpl;
+import balabol.error.free.text.services.impl.YandexSpellerServiceImpl;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,11 +14,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Test TextCorrectionServiceImpl")
+@DisplayName("unit tests for TextCorrectionServiceImpl")
 public class TextCorrectionServiceImplTest {
+
+    private static final TextRequest TEXT_REQUEST = new TextRequest("Превет", 0, LanguageType.RU);
+
+    private static List<List<SpellResult>> LIST_SPELL_RESULT;
 
     @InjectMocks
     private TextCorrectionServiceImpl textCorrectionService;
@@ -26,173 +28,182 @@ public class TextCorrectionServiceImplTest {
     @Mock
     private YandexSpellerServiceImpl yandexSpellerService;
 
-    private static List<List<SpellResult>> response;
-
-    private static TextRequest testTextRequest;
-
     @BeforeAll
     public static void setBeforeAll() {
-        response = new ArrayList<>();
-        response.add(new ArrayList<>());
-        response.get(0).add(new SpellResult(1, 0, 0,0,6,"Превет", new ArrayList<>()));
-        response.get(0).get(0).s().add("Привет");
+        initializeListSpellResult();
+    }
 
-        testTextRequest = new TextRequest("Превет", 0, LanguageType.RU);
+    public static void initializeListSpellResult() {
+        LIST_SPELL_RESULT = new ArrayList<>();
+        LIST_SPELL_RESULT.add(new ArrayList<>());
+        LIST_SPELL_RESULT.get(0).add(
+                new SpellResult(1, 0, 0,0,6,"Превет",
+                        new ArrayList<>()));
+        LIST_SPELL_RESULT.get(0).get(0).s().add("Привет");
     }
 
     @Test
-    @DisplayName("Given uncorrected text When correctSpellInText Then corrected text")
-    public void uncorrectedText_correctSpellInText_correctedText() {
+    @DisplayName("Given text with spell errors When method correctSpellInText " +
+            "Then text without spell errors")
+    public void textWithSpellErrors_correctSpellInText_textWithoutSpellErrors() {
 
-        String uncorrectedText = "Превет";
+        String textWithSpellErrors = "Превет";
 
-        Mockito.when(yandexSpellerService
-                .sendTextRequest(any(TextRequest.class)))
-                .thenReturn(response);
+        Mockito.when(yandexSpellerService.sendTextRequest(TEXT_REQUEST))
+                .thenReturn(LIST_SPELL_RESULT);
 
-        String actual = textCorrectionService
-                .correctSpellInText(uncorrectedText, LanguageType.RU);
+        String actualText = textCorrectionService
+                .correctSpellInText(textWithSpellErrors, LanguageType.RU);
 
-        Assertions.assertEquals("Привет", actual);
+        Assertions.assertEquals("Привет", actualText);
     }
 
     @Test
-    @DisplayName("Given uncorrected text When processText Then uncorrected text")
-    public void uncorrectedText_processText_correctedText() {
-        Mockito.when(yandexSpellerService.sendTextRequest(any(TextRequest.class))).thenReturn(response);
+    @DisplayName("Given text with spell errors When method processText Then text without spell errors")
+    public void textWithSpellErrors_processText_textWithoutSpellErrors() {
+        Mockito.when(yandexSpellerService.sendTextRequest(TEXT_REQUEST))
+                .thenReturn(LIST_SPELL_RESULT);
 
-        String actual = textCorrectionService.processText(testTextRequest, new StringBuilder());
+        String actualText = textCorrectionService.processText(TEXT_REQUEST, new StringBuilder());
 
-        Assertions.assertEquals("Привет", actual);
+        Assertions.assertEquals("Привет", actualText);
     }
 
     @Test
-    @DisplayName("When sendRequestOnCheckSpellText Then SpellResults")
-    public void sendRequestOnCheckSpellText_SpellResults() {
+    @DisplayName("When sendRequestOnCheckSpellText Then method list spell result")
+    public void sendRequestOnCheckSpellText_listSpellResult() {
 
-        List<List<SpellResult>> expected = new ArrayList<>();
-        expected.add(new ArrayList<>());
-        expected.get(0).add(new SpellResult(1, 0, 0,0,6,"Превет", new ArrayList<>()));
-        expected.get(0).get(0).s().add("Привет");
+        List<List<SpellResult>> expectedListSpellResult = LIST_SPELL_RESULT;
 
-        Mockito.when(yandexSpellerService.sendTextRequest(any(TextRequest.class))).thenReturn(expected);
+        Mockito.when(yandexSpellerService.sendTextRequest(TEXT_REQUEST))
+                .thenReturn(expectedListSpellResult);
 
-        List<List<SpellResult>> actual = textCorrectionService
-                .sendRequestOnCheckSpellText(testTextRequest);
+        List<List<SpellResult>> actualListSpellResult = textCorrectionService
+                .sendRequestOnCheckSpellText(TEXT_REQUEST);
 
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertEquals(expectedListSpellResult, actualListSpellResult);
     }
 
     @Test
-    @DisplayName("Given in text contains regex When processResponseFromTextSpellCheck Then true")
-    public void processResponseFromTextSpellCheck() {
-        StringBuilder actual = new StringBuilder();
+    @DisplayName("Given list spell results and text with spell errors " +
+            "When method processResponseFromTextSpellCheck " +
+            "Then text without spell errors")
+    public void listSpellResultsAndTextWithSpellErrors_processResponseFromTextSpellCheck_textWithoutSpellErrors() {
 
-        actual = textCorrectionService.processResponseFromTextSpellCheck(response, actual);
+        StringBuilder textWithoutSpellErrorsBuilder = textCorrectionService
+                .processResponseFromTextSpellCheck(LIST_SPELL_RESULT,
+                        new StringBuilder("Превет"));
 
-        Assertions.assertEquals("Привет", actual.toString());
+        Assertions.assertEquals("Привет", textWithoutSpellErrorsBuilder.toString());
     }
 
     @Test
-    @DisplayName("Given in text contains regex When ifRegexAreInTheText Then true")
+    @DisplayName("Given in text contains regex When method ifRegexAreInTheText Then true")
     public void InTextContainsRegex_ifRegexAreInTheText_true() {
 
         String regex = "[0-9]+";
 
-        String textTest = "text test123";
+        String textWithRegex = "text123";
 
-        boolean actual = textCorrectionService.ifRegexAreInTheText(textTest, regex);
+        boolean actualCheckResult = textCorrectionService
+                .ifRegexAreInTheText(textWithRegex, regex);
 
-        Assertions.assertTrue(actual);
+        Assertions.assertTrue(actualCheckResult);
     }
 
     @Test
-    @DisplayName("Given in text not contains regex When ifRegexAreInTheText Then false")
+    @DisplayName("Given in text not contains regex When method ifRegexAreInTheText Then false")
     public void InTextNotContainsRegex_ifRegexAreInTheText_false() {
 
         String regex = "[0-9]+";
 
-        String textTest = "text test";
+        String textWithoutRegex = "text";
 
-        boolean actual = textCorrectionService.ifRegexAreInTheText(textTest, regex);
+        boolean actualCheckResult = textCorrectionService
+                .ifRegexAreInTheText(textWithoutRegex, regex);
 
-        Assertions.assertFalse(actual);
+        Assertions.assertFalse(actualCheckResult);
     }
 
     @Test
-    @DisplayName("Given original word short word for replace on 1 When changeOffset Then negative 1")
-    public void originalWordLongerWordForReplaceOn1_changeOffset_negative1() {
-
-        String originalWord = "words";
-
-        String wordForReplace = "word";
+    @DisplayName("Given original word one symbol shorter and offset equal zero" +
+            "When method changeOffset " +
+            "Then offset equal negative one")
+    public void originalWordOneSymbolShorterAndOffsetEqualZero_changeOffset_offsetEqualOne() {
 
         int offset = 0;
 
-        int actual = textCorrectionService.changeOffset(originalWord, wordForReplace, offset);
-
-        Assertions.assertEquals(-1, actual);
-    }
-
-    @Test
-    @DisplayName("Given original word longer word for replace on 1 When changeOffset Then 1")
-    public void originalWordLongerWordForReplaceOn1_changeOffset_1() {
-
-        String originalWord = "word";
-
-        String wordForReplace = "words";
-
-        int offset = 0;
-
-        int actual = textCorrectionService.changeOffset(originalWord, wordForReplace, offset);
+        int actual = textCorrectionService.changeOffset("word", "words", offset);
 
         Assertions.assertEquals(1, actual);
     }
 
     @Test
-    @DisplayName("Given text with size = 10 When splitTextOnPart Then 5")
-    public void textWithSize10_splitTextOnPart_5() {
+    @DisplayName("Given original word one symbol longer and offset equal zero" +
+            "When method changeOffset " +
+            "Then offset equal negative one")
+    public void originalWordOneSymbolLongerAndOffsetEqualZero_changeOffset_offsetEqualNegativeOne() {
 
-        String str = "0123456789";
+        int offset = 0;
+
+        int actual = textCorrectionService.changeOffset("words", "word", offset);
+
+        Assertions.assertEquals(-1, actual);
+    }
+
+    @Test
+    @DisplayName("Given text with size ten characters and max length part equal two " +
+            "When method splitTextOnPart Then five")
+    public void textWithSizeTenCharactersAndMaxLengthPartEqualTwo_splitTextOnPart_five() {
+
+        String textWithSizeTenCharacters = "0123456789";
 
         int maxLengthPart = 2;
 
-        int actual = textCorrectionService.splitTextOnPart(str, maxLengthPart).size();
+        int actual = textCorrectionService.splitTextOnPart(textWithSizeTenCharacters, maxLengthPart).size();
 
         Assertions.assertEquals(5, actual);
     }
 
     @Test
-    @DisplayName("Given text contains urls and numbers When getOptionsForText Then 6")
-    public void textContainsUrlsAndNumbers_getOptionsForText_6() {
+    @DisplayName("Given text contains urls and numbers " +
+            "When method getOptionsForText Then six")
+    public void textContainsUrlsAndNumbers_getOptionsForText_six() {
 
-        String text = "text test 1 https://text.test";
+        String textContainsUrlsAndNumbers = "text https://text.test 123";
 
-        Assertions.assertEquals(6, textCorrectionService.getOptionsForText(text));
+        Assertions.assertEquals(6, textCorrectionService
+                .getOptionsForText(textContainsUrlsAndNumbers));
     }
 
     @Test
-    @DisplayName("Given text no contains urls and numbers When getOptionsForText Then 0")
-    public void textNoContainsUrlsAndNumbers_getOptionsForText_0() {
+    @DisplayName("Given text no contains urls and numbers " +
+            "When method getOptionsForText Then zero")
+    public void textNoContainsUrlsAndNumbers_getOptionsForText_zero() {
 
-        String text = "text test";
+        String textNoContainsUrlsAndNumbers = "text";
 
-        Assertions.assertEquals(0, textCorrectionService.getOptionsForText(text));
+        Assertions.assertEquals(0, textCorrectionService
+                .getOptionsForText(textNoContainsUrlsAndNumbers));
     }
 
     @Test
-    @DisplayName("Given text contains urls and no contains numbers When getOptionsForText Then 4")
-    public void textContainsUrlsAndNoContains_numbers_getOptionsForText_4() {
-        String text = "text test https://text.test";
+    @DisplayName("Given text contains urls and no contains numbers " +
+            "When method getOptionsForText Then four")
+    public void textContainsUrlsAndNoContainsNumbers_getOptionsForText_four() {
+        String textContainsUrlsAndNoContainsNumbers = "text https://text.test";
 
-        Assertions.assertEquals(4, textCorrectionService.getOptionsForText(text));
+        Assertions.assertEquals(4, textCorrectionService
+                .getOptionsForText(textContainsUrlsAndNoContainsNumbers));
     }
 
     @Test
-    @DisplayName("Given text no contains urls and contains numbers When getOptionsForText Then 2")
-    public void textNoContainsUrlsAndContains_numbers_getOptionsForText_2() {
-        String text = "text 1234";
+    @DisplayName("Given text no contains urls and contains numbers " +
+            "When method getOptionsForText Then two")
+    public void textNoContainsUrlsAndContains_numbers_getOptionsForText_two() {
+        String textNoContainsUrlsAndContainsNumbers = "text 1234";
 
-        Assertions.assertEquals(2, textCorrectionService.getOptionsForText(text));
+        Assertions.assertEquals(2, textCorrectionService
+                .getOptionsForText(textNoContainsUrlsAndContainsNumbers));
     }
 }

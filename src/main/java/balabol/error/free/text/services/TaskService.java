@@ -1,7 +1,7 @@
-package balabol.error.free.text.unit.services;
+package balabol.error.free.text.services;
 
-import balabol.error.free.text.unit.dtos.TaskCreation;
-import balabol.error.free.text.unit.entities.Task;
+import balabol.error.free.text.dtos.TaskCreation;
+import balabol.error.free.text.entities.Task;
 
 public interface TaskService {
     int createTask(TaskCreation taskCreation);

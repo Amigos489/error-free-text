@@ -1,6 +1,6 @@
-package balabol.error.free.text.unit.validators;
+package balabol.error.free.text.validators;
 
-import balabol.error.free.text.unit.annotations.NoAllNumbersOrSpecSymbols;
+import balabol.error.free.text.annotations.NoAllNumbersOrSpecSymbols;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

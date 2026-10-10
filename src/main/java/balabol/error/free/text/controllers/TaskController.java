@@ -1,20 +1,23 @@
-package balabol.error.free.text.unit.controllers;
+package balabol.error.free.text.controllers;
 
-import balabol.error.free.text.unit.dtos.TaskCreation;
-import balabol.error.free.text.unit.entities.Task;
-import balabol.error.free.text.unit.mappers.TaskMapper;
-import balabol.error.free.text.unit.services.TaskService;
+import balabol.error.free.text.dtos.TaskCreation;
+import balabol.error.free.text.entities.Task;
+import balabol.error.free.text.mappers.TaskMapper;
+import balabol.error.free.text.services.TaskService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/tasks")
 @AllArgsConstructor
+@Validated
 public class TaskController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskController.class.getName());
@@ -41,7 +44,7 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findTaskById(@PathVariable("id") int id) {
+    public ResponseEntity<?> findTaskById(@PathVariable("id") @Positive(message = "id must be greater 0") int id) {
 
         LOGGER.info("method findTaskById received request with parameters: id = {}", id);
 

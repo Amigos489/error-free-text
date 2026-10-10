@@ -1,7 +1,7 @@
 services:
   db:
     container_name: container_db
-    image: postgres:17
+    image: postgres:17.0
     restart: unless-stopped
     ports:
       - "127.0.0.1:${POSTGRES_PORT}:5432"

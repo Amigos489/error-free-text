@@ -1,8 +1,8 @@
-package balabol.error.free.text.unit.mappers.impl;
+package balabol.error.free.text.mappers.impl;
 
-import balabol.error.free.text.unit.dtos.TaskResponse;
-import balabol.error.free.text.unit.entities.Task;
-import balabol.error.free.text.unit.mappers.TaskMapper;
+import balabol.error.free.text.dtos.TaskResponse;
+import balabol.error.free.text.entities.Task;
+import balabol.error.free.text.mappers.TaskMapper;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,13 +1,13 @@
-package balabol.error.free.text.unit.controllers;
+package balabol.error.free.text.controllers;
 
-import balabol.error.free.text.unit.dtos.ErrorResponse;
-import balabol.error.free.text.unit.exceptions.NotFoundException;
+import balabol.error.free.text.dtos.ErrorResponse;
+import balabol.error.free.text.exceptions.TaskNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,8 +21,8 @@ public class GlobalExceptionHandler {
 
     private static Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class.getName());
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<?> notFoundException(NotFoundException e,
+    @ExceptionHandler(TaskNotFoundException.class)
+    public ResponseEntity<?> notFoundException(TaskNotFoundException e,
                                                HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 e.getMessage(),
@@ -43,29 +43,32 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 errors.toString(),
-                HttpStatus.BAD_REQUEST.value(),
-                LocalDateTime.now(),
-                request.getRequestURI());
-
-        LOGGER.error(errors.toString());
-
-        return new ResponseEntity<>(errorResponse,
-                HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<?> httpMessageNotReadableException(HttpMessageNotReadableException e,
-                                               HttpServletRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                e.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
                 LocalDateTime.now(),
                 request.getRequestURI());
 
         LOGGER.error(e.getMessage());
 
         return new ResponseEntity<>(errorResponse,
-                HttpStatus.BAD_REQUEST);
+                HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<?> constraintViolationException(ConstraintViolationException e,
+                                               HttpServletRequest request) {
+
+        String errorMessage = getSubstringErrorMessage(e.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                errorMessage,
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                LocalDateTime.now(),
+                request.getRequestURI());
+
+        LOGGER.error(errorMessage);
+
+        return new ResponseEntity<>(errorResponse,
+                HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(Exception.class)
@@ -102,5 +105,11 @@ public class GlobalExceptionHandler {
         }
 
         return errors;
+    }
+
+    public String getSubstringErrorMessage(String message) {
+        int indexEnd = message.indexOf(' ') + 1;
+
+        return new StringBuilder(message).substring(indexEnd);
     }
 }

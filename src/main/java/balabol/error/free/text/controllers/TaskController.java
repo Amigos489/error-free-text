@@ -5,6 +5,7 @@ import balabol.error.free.text.entities.Task;
 import balabol.error.free.text.mappers.TaskMapper;
 import balabol.error.free.text.services.TaskService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -44,7 +45,9 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findTaskById(@PathVariable("id") @Positive(message = "id must be greater 0") int id) {
+    public ResponseEntity<?> findTaskById(@PathVariable("id")
+                                              @NotNull(message = "id cannot be null")
+                                              @Positive(message = "id must be greater 0") int id) {
 
         LOGGER.info("method findTaskById received request with parameters: id = {}", id);
 

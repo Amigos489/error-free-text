@@ -12,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -73,7 +74,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> exception(Exception e,
-                                        HttpServletRequest request) {
+                                       HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 e.getMessage(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -84,6 +85,21 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse,
                 HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<?> methodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e,
+                                       HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                request.getRequestURI());
+
+        LOGGER.error(e.getMessage());
+
+        return new ResponseEntity<>(errorResponse,
+                HttpStatus.BAD_REQUEST);
     }
 
     public Map<String, List<String>> getValidationErrors(MethodArgumentNotValidException e) {

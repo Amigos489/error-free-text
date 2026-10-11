@@ -18,20 +18,20 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Lob
     @Column(name = "text",
-            nullable = false)
+            nullable = false,
+            columnDefinition = "TEXT")
     private String text;
 
     @Column(name = "status",
             nullable = false,
-            length = 20)
+            columnDefinition = "VARCHAR(20)")
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
     @Column(name = "language",
             nullable = false,
-            length = 2)
+            columnDefinition = "VARCHAR(2)")
     @Enumerated(EnumType.STRING)
     private LanguageType language;
 
